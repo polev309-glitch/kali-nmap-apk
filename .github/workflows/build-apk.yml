@@ -23,10 +23,12 @@ jobs:
 
       - name: Download and unpack KivyMD
         run: |
-          mkdir -p /tmp/kivymd_whl
-          pip download kivymd==1.1.1 --no-deps -d /tmp/kivymd_whl
-          cd /tmp/kivymd_whl
-          unzip -o kivymd-1.1.1-py3-none-any.whl -d $GITHUB_WORKSPACE/
+          mkdir -p /tmp/kivymd_src
+          pip download kivymd==1.1.1 --no-deps --no-binary=:all: -d /tmp/kivymd_src
+          cd /tmp/kivymd_src
+          tar -xzf kivymd-1.1.1.tar.gz
+          cp -r kivymd-1.1.1/kivymd $GITHUB_WORKSPACE/
+          ls -la $GITHUB_WORKSPACE/kivymd | head
 
       - name: Clean previous build
         run: |
