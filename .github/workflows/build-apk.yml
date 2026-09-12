@@ -31,9 +31,9 @@ jobs:
 
       - name: Build APK
         env:
-          # Ключевое: запрещаем Buildozer создавать venv с другой версией Python
-          PYTHON: python3.9
-          PIP: pip3.9
+          PYTHON: /opt/hostedtoolcache/Python/3.9.25/x64/bin/python
+          PIP: /opt/hostedtoolcache/Python/3.9.25/x64/bin/pip
+          PIP_NO_BUILD_ISOLATION: "1"
         run: buildozer -v android debug
 
       - name: Upload APK
