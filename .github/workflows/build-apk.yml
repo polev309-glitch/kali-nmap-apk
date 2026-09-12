@@ -23,7 +23,12 @@ jobs:
 
       - name: Accept Android SDK licenses
         run: |
-          yes | sdkmanager --licenses || true
+          SDKMANAGER=$(find ~/.buildozer/android/platform/android-sdk -name "sdkmanager" -type f 2>/dev/null | head -n 1)
+          echo "Found sdkmanager at: $SDKMANAGER"
+          yes | $SDKMANAGER --licenses 2>/dev/null || true
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin/
+          ln -sf $SDKMANAGER ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          $SDKMANAGER --sdk_root=$HOME/.buildozer/android/platform/android-sdk "build-tools;29.0.0" || true
 
       - name: Download and unpack KivyMD
         run: |
@@ -41,7 +46,7 @@ jobs:
           rm -rf bin
 
       - name: Build APK
-        run: buildozer -v android debug
+        run: yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
