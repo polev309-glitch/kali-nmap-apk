@@ -17,8 +17,8 @@ jobs:
         uses: digreatbrian/buildozer-action@v2
         with:
           python-version: 3.11
-          workdir: .
-          buildozer_version: stable
+          work-dir: .
+          buildozer-cmd: buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
