@@ -24,10 +24,10 @@ jobs:
           sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config \
             zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
 
-      - name: Install Buildozer and jnius
+      - name: Install Buildozer and pyjnius
         run: |
           pip install buildozer cython
-          pip install "jnius>=1.4.0"
+          pip install "pyjnius>=1.4.0"
 
       - name: Build APK
         run: buildozer -v android debug
