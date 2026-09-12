@@ -25,9 +25,11 @@ jobs:
         run: |
           rm -rf .buildozer bin
 
-      - name: Clean global buildozer cache
-        run: |
-          rm -rf ~/.buildozer
+      - name: Clean Buildozer cache
+       run: |
+        rm -rf ~/.buildozer
+        rm -rf .buildozer
+        rm -rf bin
 
       - name: Build APK
         run: buildozer -v android debug
