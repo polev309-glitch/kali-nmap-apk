@@ -1,4 +1,12 @@
 # main.py — Kali Hunter
+import os
+os.environ["KIVY_GL_BACKEND"] = "gles2"
+os.environ["KIVY_METRICS_DENSITY"] = "2"
+
+from kivy.config import Config
+Config.set("graphics", "multisamples", "0")
+Config.set("graphics", "gles_backend", "gles2")
+
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
