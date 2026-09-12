@@ -7,7 +7,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.label import MDLabel
 from kivymd.uix.card import MDCard
 from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.toolbar import MDTopAppBar
+from kivymd.uix.toolbar import MDToolbar
 from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.utils import platform
@@ -22,7 +22,7 @@ class KaliHunterApp(MDApp):
 
         screen = MDScreen()
 
-        toolbar = MDTopAppBar(
+        toolbar = MDToolbar(
             title="Kali Hunter",
             anchor_title="left",
             elevation=4,
@@ -110,7 +110,7 @@ class KaliHunterApp(MDApp):
                 msg = (
                     "[color=ff4444]Termux не найден.[/color]\n\n"
                     "Установи Termux из F-Droid:\n"
-                    "https://f-droid.org/packages/com.termux/\n\n"
+                    "https://-f-droid.org/packages/com.termux/\n\n"
                     "Потом внутри Termux выполни:\n"
                     "pkg install nmap"
                 )
