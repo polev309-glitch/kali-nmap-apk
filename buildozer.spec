@@ -8,7 +8,6 @@ source.include_exts = py,png,jpg,kv,atlas
 
 version = 1.0
 
-# Жёстко фиксируем совместимые версии
 requirements = python3,kivy==2.3.0,kivymd==1.1.1
 
 orientation = portrait
