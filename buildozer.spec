@@ -22,7 +22,7 @@ android.ndk = 25b
 android.archs = arm64-v8a
 
 android.build_tools_version = 33.0.0
-android.gradle_version = 8.0.2
+android.accept_sdk_license = True
 
 [buildozer]
 log_level = 2
