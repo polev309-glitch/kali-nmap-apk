@@ -13,7 +13,6 @@ from kivy.metrics import dp
 from kivy.utils import platform
 import threading
 import subprocess
-import os
 
 
 class KaliHunterApp(MDApp):
@@ -27,9 +26,7 @@ class KaliHunterApp(MDApp):
 
         screen = MDScreen()
 
-        root = MDBoxLayout(
-            orientation="vertical",
-        )
+        root = MDBoxLayout(orientation="vertical")
 
         toolbar = MDToolbar(
             title="Kali Hunter",
@@ -111,8 +108,6 @@ class KaliHunterApp(MDApp):
         screen.add_widget(root)
         return screen
 
-    # ---------------- UI handlers ----------------
-
     def start_scan(self, args):
         if args == "__ROOT_CHECK__":
             self.result_label.text = "[b]Проверяю root...[/b]"
@@ -130,8 +125,6 @@ class KaliHunterApp(MDApp):
 
     def _set_result(self, text):
         self.result_label.text = text
-
-    # ---------------- Root helpers ----------------
 
     def _run_as_root(self, command, timeout=30):
         try:
@@ -159,8 +152,6 @@ class KaliHunterApp(MDApp):
     def _path_exists_as_root(self, path):
         out, err, code = self._run_as_root(f"test -x {path}", timeout=10)
         return code == 0
-
-    # ---------------- Root check job ----------------
 
     def _do_root_check(self):
         info = []
@@ -192,8 +183,6 @@ class KaliHunterApp(MDApp):
             )
 
         Clock.schedule_once(lambda dt: self._set_result("\n".join(info)))
-
-    # ---------------- Scan job ----------------
 
     def _do_scan(self, target, args):
         if platform == "android":
