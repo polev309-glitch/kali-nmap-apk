@@ -1,4 +1,4 @@
-# main.py
+# main.py — Kali Hunter
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -12,7 +12,7 @@ from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.utils import platform
 import threading
-import subprocess
+import os
 
 
 class KaliHunterApp(MDApp):
@@ -104,24 +104,32 @@ class KaliHunterApp(MDApp):
         threading.Thread(target=self._do_scan, args=(target, args), daemon=True).start()
 
     def _do_scan(self, target, args):
-        # На Android вызываем nmap через Termux, на ПК — напрямую
         if platform == "android":
-            cmd = f"nmap {args} {target}"
-            try:
-                out = subprocess.check_output(
-                    ["/data/data/com.termux/files/usr/bin/bash", "-c", cmd],
-                    stderr=subprocess.STDOUT, timeout=300
-                ).decode(errors="ignore")
-            except Exception as e:
-                out = f"Ошибка: {e}\nУбедись что Termux установлен и nmap внутри него: pkg install nmap"
+            termux_bash = "/data/data/com.termux/files/usr/bin/bash"
+            if not os.path.exists(termux_bash):
+                msg = (
+                    "[color=ff4444]Termux не найден.[/color]\n\n"
+                    "Установи Termux из F-Droid:\n"
+                    "https://f-droid.org/packages/com.termux/\n\n"
+                    "Потом внутри Termux выполни:\n"
+                    "pkg install nmap"
+                )
+                Clock.schedule_once(lambda dt: self._set_result(msg))
+                return
+            cmd = [
+                termux_bash, "-c",
+                f"nmap {args} {target}"
+            ]
         else:
-            try:
-                out = subprocess.check_output(
-                    f"nmap {args} {target}", shell=True,
-                    stderr=subprocess.STDOUT, timeout=300
-                ).decode(errors="ignore")
-            except Exception as e:
-                out = f"Ошибка: {e}"
+            cmd = ["nmap", *args.split(), target]
+
+        try:
+            import subprocess
+            out = subprocess.check_output(
+                cmd, stderr=subprocess.STDOUT, timeout=300
+            ).decode(errors="ignore")
+        except Exception as e:
+            out = f"[color=ff4444]Ошибка:[/color] {e}"
 
         Clock.schedule_once(lambda dt: self._set_result(out))
 
