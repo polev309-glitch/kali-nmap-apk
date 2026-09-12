@@ -2,10 +2,9 @@
 
 Простое Android-приложение для сканирования сети на базе Nmap.
 
-**Скачать APK:** [kalihunter-1.0-debug.apk]([https://github.com/polev309-glitch/kali-nmap-apk/actions/runs/34716918455/artifacts/10304926658](https://github.com/polev309-glitch/kali-nmap-apk/releases/download/v1.0/kalihunter-1.0-arm64-v8a-debug.apk)
+**Скачать APK:** [kalihunter-1.0-debug.apk]([https://github.com/polev309-glitch/kali-nmap-apk/actions/runs/34716918455/artifacts/10304926658]([https://github.com/polev309-glitch/kali-nmap-apk/releases/download/v1.0/kalihunter-1.0-arm64-v8a-debug.apk](https://github.com/polev309-glitch/kali-nmap-apk/releases/tag/v1.0))
 
-**SHA256 APK:**
-828d6a8c926df93a8afe2f6882d71849c83b721e84b55a5a4424a79eba2f89c4
+
 
 
 ## Что это
