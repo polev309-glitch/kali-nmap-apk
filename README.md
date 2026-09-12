@@ -2,6 +2,13 @@
 
 Простое Android-приложение для сканирования сети на базе Nmap.
 
+**Скачать APK:** [kalihunter-1.0-debug.apk](https://github.com/polev309-glitch/kali-nmap-apk/actions) — открой последнюю успешную сборку в разделе **Actions** → **Artifacts** → `kivy-apk`.
+
+**SHA256 APK:**
+
+80f7cd3530b9382ab8f4a55b4da8dc276139d7befe726962d67a361a944aef09
+
+
 ## Что это
 
 Мобильный интерфейс для Nmap с кнопками быстрого доступа к типовым сценариям сканирования:
@@ -27,9 +34,9 @@
 
 ## Технологии
 
-- Python 3.11
+- Python 3.11.9
 - Kivy 2.3.0
-- KivyMD 1.2.0
+- KivyMD 1.1.1
 - python-for-android
 - Buildozer
 
