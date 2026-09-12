@@ -11,25 +11,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
-         sudo apt-get update
-         sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config \
-         zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
-         pip install --upgrade "pip<25" setuptools wheel
-         pip install buildozer "cython<3" virtualenv
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config \
+            zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev
+          pip install --upgrade "pip<25" setuptools wheel
+          pip install buildozer "cython<3" virtualenv
 
-      - name: Clean previous build (local)
+      - name: Download and unpack KivyMD
         run: |
-          rm -rf .buildozer bin
+          mkdir -p /tmp/kivymd_whl
+          pip download kivymd==1.1.1 --no-deps -d /tmp/kivymd_whl
+          cd /tmp/kivymd_whl
+          unzip -o kivymd-1.1.1-py3-none-any.whl -d $GITHUB_WORKSPACE/
 
-      - name: Clean Buildozer cache
-       run: |
-        rm -rf ~/.buildozer
-        rm -rf .buildozer
-        rm -rf bin
+      - name: Clean previous build
+        run: |
+          rm -rf ~/.buildozer
+          rm -rf .buildozer
+          rm -rf bin
 
       - name: Build APK
         run: buildozer -v android debug
