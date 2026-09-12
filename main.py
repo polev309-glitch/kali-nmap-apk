@@ -12,10 +12,15 @@ from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.utils import platform
 import threading
+import subprocess
 import os
 
 
 class KaliHunterApp(MDApp):
+
+    TERMUX_PREFIX = "/data/data/com.termux/files/usr"
+    NMAP_BIN = TERMUX_PREFIX + "/bin/nmap"
+
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Red"
@@ -53,6 +58,7 @@ class KaliHunterApp(MDApp):
             ("Поиск уязвимостей",    "-sV --script vuln -T4"),
             ("SYN-стелс",            "-sS -T4"),
             ("Ping sweep",           "-sn"),
+            ("Проверить root",       "__ROOT_CHECK__"),
         ]
         for text, args in modes:
             btn = MDRaisedButton(
@@ -95,46 +101,153 @@ class KaliHunterApp(MDApp):
         screen.add_widget(root)
         return screen
 
+    # ---------------- UI handlers ----------------
+
     def start_scan(self, args):
+        if args == "__ROOT_CHECK__":
+            self.result_label.text = "[b]Проверяю root...[/b]"
+            threading.Thread(target=self._do_root_check, daemon=True).start()
+            return
+
         target = self.target_field.text.strip()
         if not target:
             self.result_label.text = "[color=ff4444]Введи цель[/color]"
             return
         self.result_label.text = f"[b]Сканирую {target}...[/b]"
-        threading.Thread(target=self._do_scan, args=(target, args), daemon=True).start()
+        threading.Thread(
+            target=self._do_scan, args=(target, args), daemon=True
+        ).start()
+
+    def _set_result(self, text):
+        self.result_label.text = text
+
+    # ---------------- Root helpers ----------------
+
+    def _run_as_root(self, command, timeout=30):
+        """
+        Запускает команду от root через Magisk.
+        Возвращает (stdout, stderr, returncode).
+        """
+        try:
+            r = subprocess.run(
+                ["su", "-c", command],
+                capture_output=True,
+                timeout=timeout,
+            )
+            return (
+                r.stdout.decode(errors="ignore"),
+                r.stderr.decode(errors="ignore"),
+                r.returncode,
+            )
+        except FileNotFoundError:
+            return "", "su не найден. Magisk не установлен?", 127
+        except subprocess.TimeoutExpired:
+            return "", "Таймаут: Magisk не ответил на запрос root.", 124
+        except Exception as e:
+            return "", f"Ошибка вызова su: {e}", 1
+
+    def _has_root(self):
+        out, err, code = self._run_as_root("id", timeout=15)
+        return ("uid=0" in out) and (code == 0)
+
+    def _path_exists_as_root(self, path):
+        out, err, code = self._run_as_root(f"test -x {path}", timeout=10)
+        return code == 0
+
+    # ---------------- Root check job ----------------
+
+    def _do_root_check(self):
+        info = []
+
+        out, err, code = self._run_as_root("id", timeout=15)
+        if "uid=0" in out:
+            info.append("[color=44ff44]Root: OK[/color]")
+            info.append(f"id: {out.strip()}")
+        else:
+            info.append("[color=ff4444]Root: НЕТ[/color]")
+            info.append(f"stderr: {err.strip()}")
+            info.append(
+                "\nОткрой Magisk → Superuser → разреши Kali Hunter."
+            )
+            Clock.schedule_once(lambda dt: self._set_result("\n".join(info)))
+            return
+
+        if self._path_exists_as_root(self.NMAP_BIN):
+            info.append("[color=44ff44]nmap: найден[/color]")
+            ver_out, _, _ = self._run_as_root(
+                f"{self.NMAP_BIN} --version | head -n 2", timeout=20
+            )
+            info.append(ver_out.strip())
+        else:
+            info.append("[color=ff4444]nmap: НЕ найден[/color]")
+            info.append(
+                "Установи Termux и выполни:\n"
+                "  pkg update && pkg install nmap"
+            )
+
+        Clock.schedule_once(lambda dt: self._set_result("\n".join(info)))
+
+    # ---------------- Scan job ----------------
 
     def _do_scan(self, target, args):
         if platform == "android":
-            termux_bash = "/data/data/com.termux/files/usr/bin/bash"
-            if not os.path.exists(termux_bash):
-                msg = (
-                    "[color=ff4444]Termux не найден.[/color]\n\n"
-                    "Установи Termux из F-Droid:\n"
-                    "https://f-droid.org/packages/com.termux/\n\n"
-                    "Потом внутри Termux выполни:\n"
-                    "pkg install nmap"
-                )
-                Clock.schedule_once(lambda dt: self._set_result(msg))
-                return
-            cmd = [
-                termux_bash, "-c",
-                f"nmap {args} {target}"
-            ]
+            self._scan_android(target, args)
         else:
-            cmd = ["nmap", *args.split(), target]
+            self._scan_desktop(target, args)
+
+    def _scan_android(self, target, args):
+        # 1. Проверка root
+        if not self._has_root():
+            msg = (
+                "[color=ff4444]Root не выдан.[/color]\n\n"
+                "1) Открой Magisk → Superuser.\n"
+                "2) Разреши root для Kali Hunter.\n"
+                "3) Нажми «Проверить root» в приложении."
+            )
+            Clock.schedule_once(lambda dt: self._set_result(msg))
+            return
+
+        # 2. Проверка nmap
+        if not self._path_exists_as_root(self.NMAP_BIN):
+            msg = (
+                "[color=ff4444]nmap не найден.[/color]\n\n"
+                "Установи Termux и выполни внутри:\n"
+                "  pkg update\n"
+                "  pkg install nmap"
+            )
+            Clock.schedule_once(lambda dt: self._set_result(msg))
+            return
+
+        # 3. Собираем команду для su -c
+        prefix = self.TERMUX_PREFIX
+        nmap_cmd = (
+            f"LD_LIBRARY_PATH={prefix}/lib "
+            f"PATH={prefix}/bin:$PATH "
+            f"{self.NMAP_BIN} {args} {target}"
+        )
 
         try:
-            import subprocess
+            out, err, code = self._run_as_root(nmap_cmd, timeout=300)
+            result = out if out else err
+            if not result.strip():
+                result = (
+                    f"[color=ff8888]Пустой вывод.[/color]\n"
+                    f"exit code: {code}\nstderr: {err}"
+                )
+        except Exception as e:
+            result = f"[color=ff4444]Ошибка:[/color] {e}"
+
+        Clock.schedule_once(lambda dt: self._set_result(result))
+
+    def _scan_desktop(self, target, args):
+        try:
+            cmd = ["nmap", *args.split(), target]
             out = subprocess.check_output(
                 cmd, stderr=subprocess.STDOUT, timeout=300
             ).decode(errors="ignore")
         except Exception as e:
             out = f"[color=ff4444]Ошибка:[/color] {e}"
-
         Clock.schedule_once(lambda dt: self._set_result(out))
-
-    def _set_result(self, text):
-        self.result_label.text = text
 
 
 if __name__ == "__main__":
