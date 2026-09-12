@@ -110,7 +110,7 @@ class KaliHunterApp(MDApp):
                 msg = (
                     "[color=ff4444]Termux не найден.[/color]\n\n"
                     "Установи Termux из F-Droid:\n"
-                    "https://-f-droid.org/packages/com.termux/\n\n"
+                    "https://f-droid.org/packages/com.termux/\n\n"
                     "Потом внутри Termux выполни:\n"
                     "pkg install nmap"
                 )
