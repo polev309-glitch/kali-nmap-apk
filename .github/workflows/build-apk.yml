@@ -21,11 +21,6 @@ jobs:
           pip install --upgrade "pip<25" setuptools wheel
           pip install buildozer "cython<3" virtualenv
 
-      - name: Set JAVA_HOME to Java 17
-        run: |
-          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_17_X64/bin" >> $GITHUB_PATH
-
       - name: Accept Android SDK licenses
         run: |
           SDKMANAGER=$(find ~/.buildozer/android/platform/android-sdk -name "sdkmanager" -type f 2>/dev/null | head -n 1)
@@ -55,7 +50,10 @@ jobs:
           rm -rf bin
 
       - name: Build APK
-        run: yes | buildozer -v android debug
+        run: |
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+          yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
